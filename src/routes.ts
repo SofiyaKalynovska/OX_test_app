@@ -8,5 +8,5 @@ export const routes = {
   // Pages
   products: "/products", 
   productDetails: "/products/:id", 
-  createProduct: "/create-product", 
+  createProduct: "/create_product", 
 };
