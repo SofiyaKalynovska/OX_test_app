@@ -3,17 +3,26 @@ import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
 import { routes } from "./routes";
 import { Layout } from "./components/Layout";
 import ProductsListPage from "./pages/ProductsListPage";
+import store from "./redux/store";
+import { Provider } from "react-redux";
+import ProductDetailPage from "./pages/ProductDetailsPage";
  
 
 const App: React.FC = () => {
   return (
-    <Router>
-      <Layout>
-        <Routes>
-          <Route path={routes.products} element={<ProductsListPage />} />
-        </Routes>
-      </Layout>
-    </Router>
+    <Provider store={store}>
+      <Router>
+        <Layout>
+          <Routes>
+            <Route path={routes.products} element={<ProductsListPage />} />
+            <Route
+              path={routes.productDetails}
+              element={<ProductDetailPage />}
+            />
+          </Routes>
+        </Layout>
+      </Router>
+    </Provider>
   );
 };
 
