@@ -6,6 +6,7 @@ import ProductsListPage from "./pages/ProductsListPage";
 import store from "./redux/store";
 import { Provider } from "react-redux";
 import ProductDetailPage from "./pages/ProductDetailsPage";
+import ProductAddPage from "./pages/ProductAddPage";
  
 
 const App: React.FC = () => {
@@ -19,6 +20,7 @@ const App: React.FC = () => {
               path={routes.productDetails}
               element={<ProductDetailPage />}
             />
+            <Route path={routes.createProduct} element={<ProductAddPage/>} />
           </Routes>
         </Layout>
       </Router>
