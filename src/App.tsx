@@ -1,12 +1,20 @@
-import './index.css'; 
+import React from "react";
+import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
+import { routes } from "./routes";
+import { Layout } from "./components/Layout";
+import ProductsListPage from "./pages/ProductsListPage";
+ 
 
-function App() {
-
+const App: React.FC = () => {
   return (
-    <>
-      <h1 className='text-dark-blue'>My Project</h1>
-    </>
-  )
-}
+    <Router>
+      <Layout>
+        <Routes>
+          <Route path={routes.products} element={<ProductsListPage />} />
+        </Routes>
+      </Layout>
+    </Router>
+  );
+};
 
-export default App
+export default App;
