@@ -8,10 +8,13 @@ import { addProduct } from "../../redux/productSlice";
 import InputFormField from "./InputFormField";
 import TextAreaFormField from "./TextareaFormField";
 import { Switch } from "../Switch";
+import { useNavigate } from "react-router-dom";
+
 
 type ProductFormValues = Omit<Product, "id">;
 
 const AddProductForm: React.FC = () => {
+  const navigate = useNavigate();
   const dispatch = useDispatch();
 
   const {
@@ -37,6 +40,7 @@ const AddProductForm: React.FC = () => {
     };
     dispatch(addProduct(newProduct)); 
     reset(); 
+    navigate(`/products?tab=my&published=${published}`);
   };
 
   const handlePublishedChange = (checked: boolean) => {
