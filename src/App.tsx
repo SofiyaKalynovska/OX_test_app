@@ -1,5 +1,5 @@
 import React from "react";
-import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
+import { BrowserRouter as Router, Route, Routes, Navigate } from "react-router-dom";
 import { routes } from "./routes";
 import { Layout } from "./components/Layout";
 import store from "./redux/store";
@@ -17,6 +17,10 @@ const App: React.FC = () => {
       <Router>
         <Layout>
           <Routes>
+            <Route
+              path="/"
+              element={<Navigate to={routes.products} replace />}
+            />
             <Route path={routes.products} element={<ProductsListPage />} />
             <Route
               path={routes.productDetails}
