@@ -16,7 +16,7 @@ const CreatedProductTableRow: React.FC<ProductRowProps> = ({ product }) => {
       <td className="p-3 border-b">{new Date(product.id).toLocaleString()}</td>
       <td className="p-3 border-b">
         <Link
-          to={`/products/edit/${product.id}`}
+          to={`/edit/${product.id}`}
           className="text-blue-500 hover:text-blue-700"
         >
           Edit
