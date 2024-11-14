@@ -6,6 +6,10 @@ export default {
       colors: {
         'dark-blue': '#1e3a8a',
         'light-blue': '#3b82f6',
+        'main-orange': '#e67700',
+        'orange-light': '#ffdab3',
+        'orange-hover': '#ffb566'
+
       },
     },
   },
