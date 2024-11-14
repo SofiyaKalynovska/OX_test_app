@@ -3,9 +3,9 @@ import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 interface FilterState {
   activeTab: "api" | "my"; 
   filters: {
-    [key: string]: boolean; 
+    isPublished: boolean; 
   };
-  limit: number;
+  limit: number; 
 }
 
 const initialState: FilterState = {
@@ -13,7 +13,7 @@ const initialState: FilterState = {
   filters: {
     isPublished: true, 
   },
-  limit: 8, 
+  limit: 8,
 };
 
 const filterSlice = createSlice({
@@ -24,7 +24,13 @@ const filterSlice = createSlice({
       state.activeTab = action.payload;
     },
 
-    setFilter(state, action: PayloadAction<{ key: string; value: boolean }>) {
+    setFilter(
+      state,
+      action: PayloadAction<{
+        key: keyof FilterState["filters"];
+        value: boolean;
+      }>
+    ) {
       const { key, value } = action.payload;
       state.filters[key] = value;
     },
