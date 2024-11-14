@@ -1,36 +1,22 @@
 import React from "react";
-import { Link } from "react-router-dom";
 import { Product } from "../../api/products";
-import { routes } from "../../routes";
 import { CreatedProductTableRow } from "../CreatedProductTbleRow";
 
 interface MyProductsTabProps {
   products: Product[];
 }
 const MyProductsTab: React.FC<MyProductsTabProps> = ({ products }) => {
-
-
-  
   return (
-    <div className="overflow-x-auto">
-      <div className="mb-4">
-        <Link
-          to={routes.createProduct}
-          className="inline-block py-2 px-4 bg-blue-500 text-white font-semibold rounded-md hover:bg-blue-400"
-        >
-          Add New Product
-        </Link>
-      </div>
-
-      <table className="min-w-full table-auto border-collapse border border-gray-200">
+    <div className="p-6 overflow-x-auto">
+      <table className="border-collapse border-gray-200 border min-w-full table-auto">
         <thead>
           <tr>
-            <th className="p-3 text-left bg-gray-100 border-b">Title</th>
-            <th className="p-3 text-left bg-gray-100 border-b">Price</th>
-            <th className="p-3 text-left bg-gray-100 border-b">Category</th>
-            <th className="p-3 text-left bg-gray-100 border-b">Published</th>
-            <th className="p-3 text-left bg-gray-100 border-b">Created At</th>
-            <th className="p-3 text-left bg-gray-100 border-b">Actions</th>
+            <th className="bg-gray-100 p-3 border-b text-left">Title</th>
+            <th className="bg-gray-100 p-3 border-b text-left">Price</th>
+            <th className="bg-gray-100 p-3 border-b text-left">Category</th>
+            <th className="bg-gray-100 p-3 border-b text-left">Published</th>
+            <th className="bg-gray-100 p-3 border-b text-left">Created At</th>
+            <th className="bg-gray-100 p-3 border-b text-left">Actions</th>
           </tr>
         </thead>
         <tbody>
@@ -41,7 +27,8 @@ const MyProductsTab: React.FC<MyProductsTabProps> = ({ products }) => {
               </td>
             </tr>
           ) : (
-            products.map((product) => (
+              products.map((product) => (
+              
               <CreatedProductTableRow key={product.id} product={product} />
             ))
           )}

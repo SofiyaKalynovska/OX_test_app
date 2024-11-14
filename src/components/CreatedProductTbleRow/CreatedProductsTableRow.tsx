@@ -1,9 +1,9 @@
-import React, { useState } from "react";
+import React, { useState, useCallback } from "react";
 import { Link } from "react-router-dom";
 import { Product } from "../../api/products";
 import { useDispatch, useSelector } from "react-redux";
-import { deleteProduct } from "../../redux/productSlice"; 
-import { RootState, AppDispatch } from "../../redux/store"; 
+import { deleteProduct } from "../../redux/productSlice";
+import { RootState, AppDispatch } from "../../redux/store";
 import { ConfirmDeleteModal } from "../Modals";
 
 interface ProductRowProps {
@@ -11,31 +11,31 @@ interface ProductRowProps {
 }
 
 const CreatedProductTableRow: React.FC<ProductRowProps> = ({ product }) => {
-  const dispatch = useDispatch<AppDispatch>(); 
-  const { error } = useSelector((state: RootState) => state.products); 
+  const dispatch = useDispatch<AppDispatch>();
+  const { error } = useSelector((state: RootState) => state.products);
 
   const [isDeleting, setIsDeleting] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
 
-  const handleDeleteClick = () => {
-    setIsModalOpen(true); 
-  };
+  const handleDeleteClick = useCallback(() => {
+    setIsModalOpen(true);
+  }, []);
 
-  const handleCancelDelete = () => {
-    setIsModalOpen(false); 
-  };
+  const handleCancelDelete = useCallback(() => {
+    setIsModalOpen(false);
+  }, []);
 
-  const handleConfirmDelete = async () => {
+  const handleConfirmDelete = useCallback(async () => {
     setIsDeleting(true);
     try {
       await dispatch(deleteProduct(product.id)).unwrap();
       setIsDeleting(false);
-      setIsModalOpen(false); 
+      setIsModalOpen(false);
     } catch (err) {
       setIsDeleting(false);
       console.error("Delete failed", err);
     }
-  };
+  }, [dispatch, product.id]);
 
   return (
     <>
