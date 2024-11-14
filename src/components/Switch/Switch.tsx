@@ -10,7 +10,7 @@ interface SwitchProps {
   return (
     <div className="flex items-center">
       <span className="mr-2">{label}</span>
-      <label className="relative inline-block w-12 h-6">
+      <label className="inline-block relative w-12 h-6">
         <input
           type="checkbox"
           checked={checked}
@@ -19,7 +19,7 @@ interface SwitchProps {
         />
         <span
           className={`absolute inset-0 flex items-center justify-between cursor-pointer rounded-full bg-gray-300 transition duration-300 ease-in-out ${
-            checked ? "bg-green-500" : "bg-gray-300"
+            checked ? "bg-main-orange" : "bg-gray-300"
           }`}
         >
           <span
