@@ -106,8 +106,6 @@ const ProductsListPage: React.FC = () => {
       const filteredProducts = createdProducts.filter(
         (product) => product.published === filters.isPublished
       );
-      console.log("Filtered Products:", filteredProducts);
-
       return <MyProductsTab products={filteredProducts} />;
     }
   };

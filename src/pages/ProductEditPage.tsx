@@ -1,10 +1,16 @@
 import React, { useEffect, useState, ChangeEvent } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
-import { fetchProductDetail, updateProduct } from "../redux/productSlice";
+import {
+  fetchProductDetail,
+  updateProduct,
+  deleteProduct,
+} from "../redux/productSlice";
 import { RootState, AppDispatch } from "../redux/store";
 import { Product } from "../api/products";
 import { routes } from "../routes";
+import { setFilter } from "../redux/filterSlice";
+import { ConfirmDeleteModal } from "../components/Modals";
 
 const ProductEditPage: React.FC = () => {
   const { productId } = useParams<{ productId: string }>();
@@ -15,7 +21,11 @@ const ProductEditPage: React.FC = () => {
     (state: RootState) => state.products
   );
 
+  const filters = useSelector((state: RootState) => state.filter.filters);
+
   const [editedProduct, setEditedProduct] = useState<Product | null>(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   useEffect(() => {
     if (productId) {
@@ -66,9 +76,51 @@ const ProductEditPage: React.FC = () => {
         );
       }
 
+      dispatch(
+        setFilter({
+          key: "isPublished",
+          value: editedProduct.published ?? filters.isPublished,
+        })
+      );
+      // to do: create fetch and after add to
+      // dispatch(updateExistingProduct(editedProduct));
       dispatch(updateProduct(editedProduct));
 
       navigate(routes.products);
+    }
+  };
+
+  const handleDeleteClick = () => {
+    setIsModalOpen(true);
+  };
+
+  const handleCancelDelete = () => {
+    setIsModalOpen(false);
+  };
+
+  const handleConfirmDelete = async () => {
+    if (editedProduct) {
+      setIsDeleting(true);
+      try {
+        const createdProducts = JSON.parse(
+          localStorage.getItem("createdProducts") || "[]"
+        );
+        const filteredProducts = createdProducts.filter(
+          (prod: Product) => prod.id !== editedProduct.id
+        );
+        localStorage.setItem(
+          "createdProducts",
+          JSON.stringify(filteredProducts)
+        );
+        await dispatch(deleteProduct(editedProduct.id)).unwrap();
+
+        setIsDeleting(false);
+        setIsModalOpen(false);
+        navigate(routes.products);
+      } catch (err) {
+        setIsDeleting(false);
+        console.error("Delete failed", err);
+      }
     }
   };
 
@@ -108,13 +160,7 @@ const ProductEditPage: React.FC = () => {
                 <td className="border px-4 py-2 capitalize">{key}</td>
                 <td className="border px-4 py-2">
                   <input
-                    type={
-                      key === "price"
-                        ? "number"
-                        : key === "published"
-                        ? "checkbox"
-                        : "text"
-                    }
+                    type={key === "published" ? "checkbox" : "text"}
                     name={key}
                     value={
                       key !== "published"
@@ -145,14 +191,28 @@ const ProductEditPage: React.FC = () => {
       {renderStatus()}
       {renderForm()}
 
-      <div className="mt-4 flex justify-end">
+      <div className="mt-4 flex justify-end gap-4">
         <button
           onClick={handleSave}
           className="bg-blue-500 text-white py-2 px-4 rounded-md hover:bg-blue-700"
         >
           Save Changes
         </button>
+
+        <button
+          onClick={handleDeleteClick}
+          className="bg-red-500 text-white py-2 px-4 rounded-md hover:bg-red-700"
+          disabled={isDeleting}
+        >
+          {isDeleting ? "Deleting..." : "Delete Product"}
+        </button>
       </div>
+
+      <ConfirmDeleteModal
+        isOpen={isModalOpen}
+        onCancel={handleCancelDelete}
+        onConfirm={handleConfirmDelete}
+      />
     </div>
   );
 };
