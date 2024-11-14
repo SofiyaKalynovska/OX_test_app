@@ -151,7 +151,7 @@ const ProductsListPage: React.FC = () => {
               <SearchBar onSearch={handleSearch} />
               <Link
                 to={routes.createProduct}
-                className="bg-main-orange hover:bg-orange-hover px-4 py-2 rounded-md w-80 font-semibold text-white hover:text-black transition-colors duration-300"
+                className="bg-main-orange hover:bg-orange-hover px-4 py-2 rounded-md w-80 font-semibold text-center text-white hover:text-black transition-colors duration-300"
               >
                 Add New Product
               </Link>
