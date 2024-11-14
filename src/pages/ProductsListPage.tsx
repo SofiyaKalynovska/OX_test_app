@@ -1,4 +1,4 @@
-import React, { useEffect, useCallback } from "react";
+import React, { useEffect, useMemo, useCallback } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { fetchProducts, setCreatedProducts } from "../redux/productSlice";
 import { AppDispatch, RootState } from "../redux/store";
@@ -37,20 +37,28 @@ const ProductsListPage: React.FC = () => {
     (state: RootState) => state.filter
   );
 
+  const savedProducts = useMemo(() => {
+    return JSON.parse(localStorage.getItem("createdProducts") || "[]");
+  }, []);
 
-   useEffect(() => {
-     const searchParams = new URLSearchParams(location.search);
-     const publishedParam = searchParams.get("published");
+  useEffect(() => {
+    dispatch(setCreatedProducts(savedProducts));
+  }, [dispatch, savedProducts]);
 
-     if (publishedParam !== null) {
-       dispatch(
-         setFilter({
-           key: "isPublished",
-           value: publishedParam === "true", 
-         })
-       );
-     }
-   }, [ dispatch]);
+  useEffect(() => {
+    const searchParams = new URLSearchParams(location.search);
+    const publishedParam = searchParams.get("published");
+
+    if (publishedParam !== null) {
+      dispatch(
+        setFilter({
+          key: "isPublished",
+          value: publishedParam === "true",
+        })
+      );
+    }
+  }, [dispatch]);
+
   const {
     products: fetchedProducts,
     status: fetchStatus,
@@ -63,13 +71,6 @@ const ProductsListPage: React.FC = () => {
     },
     [dispatch]
   );
-
-  useEffect(() => {
-    const savedProducts = JSON.parse(
-      localStorage.getItem("createdProducts") || "[]"
-    );
-    dispatch(setCreatedProducts(savedProducts));
-  }, [dispatch]);
 
   const renderProducts = () => {
     if (fetchStatus === "loading") {
