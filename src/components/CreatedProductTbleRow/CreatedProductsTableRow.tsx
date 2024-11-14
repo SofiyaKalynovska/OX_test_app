@@ -37,6 +37,15 @@ const CreatedProductTableRow: React.FC<ProductRowProps> = ({ product }) => {
     }
   }, [dispatch, product.id]);
 
+  const formattedDateTime = new Date(product.id).toLocaleString([], {
+    day: "2-digit", 
+    month: "2-digit", 
+    year: "numeric",
+    hour: "2-digit",
+    minute: "2-digit", 
+    hour12: false, 
+  });
+
   return (
     <>
       <tr key={product.id} className="hover:bg-gray-50">
@@ -44,26 +53,24 @@ const CreatedProductTableRow: React.FC<ProductRowProps> = ({ product }) => {
         <td className="p-3 border-b">{product.price}</td>
         <td className="p-3 border-b">{product.category}</td>
         <td className="p-3 border-b">{product.published ? "Yes" : "No"}</td>
-        <td className="p-3 border-b">
-          {new Date(product.id).toLocaleString()}
-        </td>
-        <td className="p-3 border-b flex space-x-2 items-center">
+        <td className="p-3 border-b">{formattedDateTime}</td>{" "}
+        <td className="flex items-center gap-2 p-3 border-b s">
           <Link
             to={`/edit/${product.id}`}
-            className="text-blue-500 hover:text-blue-700"
+            className="bg-dark-blue hover:bg-light-blue px-4 py-2 rounded-md text-white hover:text-white"
           >
             Edit
           </Link>
 
           <button
             onClick={handleDeleteClick}
-            className="text-red-500 hover:text-red-700"
+            className="hover:bg-red-700 text-red-500 hover:text-white"
             disabled={isDeleting}
           >
             {isDeleting ? "Deleting..." : "Delete"}
           </button>
 
-          {error && <span className="text-red-600 text-sm ml-2">{error}</span>}
+          {error && <span className="ml-2 text-red-600 text-sm">{error}</span>}
         </td>
       </tr>
 

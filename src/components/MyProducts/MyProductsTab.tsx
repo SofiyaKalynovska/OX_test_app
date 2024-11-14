@@ -6,8 +6,9 @@ interface MyProductsTabProps {
   products: Product[];
 }
 const MyProductsTab: React.FC<MyProductsTabProps> = ({ products }) => {
+
   return (
-    <div className="p-6 overflow-x-auto">
+    <div className="overflow-x-auto">
       <table className="border-collapse border-gray-200 border min-w-full table-auto">
         <thead>
           <tr>
@@ -27,8 +28,7 @@ const MyProductsTab: React.FC<MyProductsTabProps> = ({ products }) => {
               </td>
             </tr>
           ) : (
-              products.map((product) => (
-              
+            products.map((product) => (
               <CreatedProductTableRow key={product.id} product={product} />
             ))
           )}
