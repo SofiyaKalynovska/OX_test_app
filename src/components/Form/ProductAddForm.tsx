@@ -4,18 +4,18 @@ import { useDispatch } from "react-redux";
 import { Product } from "../../api/products";
 import { yupResolver } from "@hookform/resolvers/yup";
 import { createProductValidationSchema } from "../../validation";
-import { addProduct } from "../../redux/productSlice";
+import { addProduct, createNewProduct } from "../../redux/productSlice"; 
 import InputFormField from "./InputFormField";
 import TextAreaFormField from "./TextareaFormField";
 import { Switch } from "../Switch";
 import { useNavigate } from "react-router-dom";
-
+import { AppDispatch } from "../../redux/store"; 
 
 type ProductFormValues = Omit<Product, "id">;
 
 const AddProductForm: React.FC = () => {
   const navigate = useNavigate();
-  const dispatch = useDispatch();
+  const dispatch = useDispatch<AppDispatch>(); 
 
   const {
     register,
@@ -31,16 +31,22 @@ const AddProductForm: React.FC = () => {
     },
   });
 
-  const published = watch("published", false); 
+  const published = watch("published", false);
 
-  const onSubmit: SubmitHandler<ProductFormValues> = (data) => {
+  const onSubmit: SubmitHandler<ProductFormValues> = async (data) => {
     const newProduct: Product = {
       ...data,
-      id: Date.now(),
+      id: Date.now(), 
     };
-    dispatch(addProduct(newProduct)); 
-    reset(); 
-    navigate(`/products?tab=my&published=${published}`);
+
+    try {
+      await dispatch(createNewProduct(newProduct)).unwrap();
+      await dispatch(addProduct(newProduct))
+      reset(); 
+      navigate(`/products?tab=my&published=${published}`); 
+    } catch (error) {
+      console.error("Failed to add product:", error);
+    }
   };
 
   const handlePublishedChange = (checked: boolean) => {
@@ -83,8 +89,8 @@ const AddProductForm: React.FC = () => {
         />
         <Switch
           label="Published"
-          checked={published} 
-          onChange={handlePublishedChange} 
+          checked={published}
+          onChange={handlePublishedChange}
         />
         <button
           type="submit"
