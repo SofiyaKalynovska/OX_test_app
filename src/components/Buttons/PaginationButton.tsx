@@ -1,18 +1,24 @@
+//
+
 import React from "react";
 
-interface ButtonProps {
+interface PaginationButtonProps {
   onClick: () => void;
   active: boolean;
   label: string;
 }
 
-const ProductListPaginationButton: React.FC<ButtonProps> = ({ onClick, active, label }) => {
+const ProductListPaginationButton: React.FC<PaginationButtonProps> = ({
+  onClick,
+  active,
+  label,
+}) => {
   return (
     <button
       onClick={onClick}
-      className={`${
-        active ? "bg-blue-700" : "bg-blue-500"
-      } text-white py-2 px-4 rounded transition-colors duration-300`}
+      className={`px-4 py-2 rounded-md ${
+        active ? "bg-main-orange" : "bg-gray-200"
+      } transition-colors duration-300`}
     >
       {label}
     </button>
