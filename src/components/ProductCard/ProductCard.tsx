@@ -14,21 +14,21 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
     navigate(`/products/${product.id}`);
   };
   return (
-    <div className="product-card bg-white shadow-md rounded-lg p-4 flex flex-col h-full">
+    <div className="flex flex-col bg-white shadow-md p-4 rounded-lg h-full product-card">
       <img
         src={product.image}
         alt={product.title}
-        className="w-full h-48 object-contain mb-4"
+        className="mb-4 w-full h-48 object-contain"
       />
 
-      <h3 className="text-lg font-semibold mb-2 text-center line-clamp-2 overflow-hidden text-ellipsis">
+      <h3 className="mb-2 line-clamp-2 font-semibold text-center text-ellipsis text-lg overflow-hidden">
         {product.title}
       </h3>
 
       <div className="flex flex-col justify-end mt-auto">
-        <p className="text-gray-700 text-center mb-4">${product.price}</p>
+        <p className="mb-4 text-center text-gray-700">${product.price}</p>
         <button
-          className="bg-green-800 text-white py-2 px-4 rounded"
+          className="border-main-orange bg-orange-light hover:bg-orange-hover px-4 py-2 rounded text-black transition-colors duration-300"
           onClick={handleViewProduct}
         >
           View Product
