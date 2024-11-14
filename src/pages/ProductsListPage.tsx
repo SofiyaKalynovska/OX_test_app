@@ -1,11 +1,15 @@
-import React, { useEffect, useState, useCallback } from "react";
+import React, { useEffect, useCallback } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { fetchProducts } from "../redux/productSlice";
+import { fetchProducts, setCreatedProducts } from "../redux/productSlice";
 import { AppDispatch, RootState } from "../redux/store";
-import ProductCard from "../components/ProductCard/ProductCard";
-import { ProductListPaginationButton } from "../components/Buttons";
-import { ProductCardSkeleton } from "../components/Skeletons";
 import { Product } from "../api/products";
+
+import { MyProductsTab } from "../components/MyProducts";
+import { ProductListPaginationButton } from "../components/Buttons";
+import { setActiveTab, setFilter, setLimit } from "../redux/filterSlice";
+import { ProductCardSkeleton } from "../components/Skeletons";
+import { Switch } from "../components/Switch";
+import ProductCard from "../components/ProductCard/ProductCard";
 
 const useFetchProducts = (limit: number) => {
   const dispatch = useDispatch<AppDispatch>();
@@ -14,23 +18,61 @@ const useFetchProducts = (limit: number) => {
   );
 
   useEffect(() => {
-    dispatch(fetchProducts(limit));
+    if (limit > 0) {
+      dispatch(fetchProducts(limit));
+    }
   }, [limit, dispatch]);
 
   return { products, status, error };
 };
 
+const ErrorMessage: React.FC<{ message: string }> = ({ message }) => (
+  <div className="text-red-500 text-center mt-4">{message}</div>
+);
+
 const ProductsListPage: React.FC = () => {
-  const [limit, setLimit] = useState<number>(8);
+  const dispatch = useDispatch<AppDispatch>();
+  const { createdProducts } = useSelector((state: RootState) => state.products);
+  const { activeTab, filters, limit } = useSelector(
+    (state: RootState) => state.filter
+  );
 
-  const { products, status, error } = useFetchProducts(limit);
 
-  const handleLimitChange = useCallback((newLimit: number) => {
-    setLimit(newLimit);
-  }, []);
+   useEffect(() => {
+     const searchParams = new URLSearchParams(location.search);
+     const publishedParam = searchParams.get("published");
+
+     if (publishedParam !== null) {
+       dispatch(
+         setFilter({
+           key: "isPublished",
+           value: publishedParam === "true", 
+         })
+       );
+     }
+   }, [ dispatch]);
+  const {
+    products: fetchedProducts,
+    status: fetchStatus,
+    error: fetchError,
+  } = useFetchProducts(limit);
+
+  const handleLimitChange = useCallback(
+    (newLimit: number) => {
+      dispatch(setLimit(newLimit));
+    },
+    [dispatch]
+  );
+
+  useEffect(() => {
+    const savedProducts = JSON.parse(
+      localStorage.getItem("createdProducts") || "[]"
+    );
+    dispatch(setCreatedProducts(savedProducts));
+  }, [dispatch]);
 
   const renderProducts = () => {
-    if (status === "loading") {
+    if (fetchStatus === "loading") {
       return (
         <div className="products-grid grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
           {Array.from({ length: limit }).map((_, index) => (
@@ -40,51 +82,98 @@ const ProductsListPage: React.FC = () => {
       );
     }
 
-    if (status === "failed") {
-      return <ErrorMessage message={error || "Failed to load products."} />;
+    if (fetchStatus === "failed") {
+      return (
+        <ErrorMessage message={fetchError || "Failed to load products."} />
+      );
     }
 
-    if (products.length === 0) {
+    if (fetchedProducts.length === 0 && createdProducts.length === 0) {
       return <p>No products available</p>;
     }
 
-    return (
-      <div className="products-grid grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-        {products.map((product: Product) => (
-          <ProductCard key={product.id} product={product} />
-        ))}
-      </div>
-    );
+    if (activeTab === "api") {
+      return (
+        <div className="products-grid grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+          {fetchedProducts.map((product: Product) => (
+            <ProductCard key={product.id} product={product} />
+          ))}
+        </div>
+      );
+    }
+
+    if (activeTab === "my") {
+      const filteredProducts = createdProducts.filter(
+        (product) => product.published === filters.isPublished
+      );
+      console.log("Filtered Products:", filteredProducts);
+
+      return <MyProductsTab products={filteredProducts} />;
+    }
   };
 
   return (
     <div className="products-list-page px-4 pb-8">
-
-      <div className="mb-4 flex space-x-4 justify-end">
-        <ProductListPaginationButton
-          onClick={() => handleLimitChange(8)}
-          active={limit === 8}
-          label="8 Products"
-        />
-        <ProductListPaginationButton
-          onClick={() => handleLimitChange(16)}
-          active={limit === 16}
-          label="16 Products"
-        />
-        <ProductListPaginationButton
-          onClick={() => handleLimitChange(20)}
-          active={limit === 20}
-          label="All Products"
-        />
+      <div className="flex border-b-2 mb-6">
+        <div
+          onClick={() => dispatch(setActiveTab("api"))}
+          className={`flex-1 py-4 text-center cursor-pointer text-lg font-semibold transition-all duration-300 ${
+            activeTab === "api"
+              ? "bg-blue-500 text-white border-b-4 border-white shadow-lg"
+              : "hover:bg-gray-100"
+          }`}
+        >
+          API Products
+        </div>
+        <div
+          onClick={() => dispatch(setActiveTab("my"))}
+          className={`flex-1 py-4 text-center cursor-pointer text-lg font-semibold transition-all duration-300 ${
+            activeTab === "my"
+              ? "bg-blue-500 text-white border-b-4 border-white shadow-lg"
+              : "hover:bg-gray-100"
+          }`}
+        >
+          My Products
+        </div>
       </div>
+
+      {activeTab === "api" && (
+        <div className="mb-4 flex space-x-4 justify-end">
+          <ProductListPaginationButton
+            onClick={() => handleLimitChange(8)}
+            active={limit === 8}
+            label="8 Products"
+          />
+          <ProductListPaginationButton
+            onClick={() => handleLimitChange(16)}
+            active={limit === 16}
+            label="16 Products"
+          />
+          <ProductListPaginationButton
+            onClick={() => handleLimitChange(20)}
+            active={limit === 20}
+            label="All Products"
+          />
+        </div>
+      )}
+
+      {activeTab === "my" && (
+        <div className="mb-4 flex justify-between items-center">
+          <Switch
+            label="Show Published Products Only"
+            checked={filters.isPublished}
+            onChange={() =>
+              dispatch(
+                setFilter({ key: "isPublished", value: !filters.isPublished })
+              )
+            }
+          />
+        </div>
+      )}
 
       {renderProducts()}
     </div>
   );
 };
-
-const ErrorMessage: React.FC<{ message: string }> = ({ message }) => (
-  <div className="text-red-500 text-center mt-4">{message}</div>
-);
 
 export default ProductsListPage;

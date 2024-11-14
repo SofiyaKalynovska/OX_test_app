@@ -7,8 +7,10 @@ import { CreatedProductTableRow } from "../CreatedProductTbleRow";
 interface MyProductsTabProps {
   products: Product[];
 }
-
 const MyProductsTab: React.FC<MyProductsTabProps> = ({ products }) => {
+
+
+  
   return (
     <div className="overflow-x-auto">
       <div className="mb-4">
