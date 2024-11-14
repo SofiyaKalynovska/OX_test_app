@@ -4,18 +4,18 @@ import { useDispatch } from "react-redux";
 import { Product } from "../../api/products";
 import { yupResolver } from "@hookform/resolvers/yup";
 import { createProductValidationSchema } from "../../validation";
-import { addProduct, createNewProduct } from "../../redux/productSlice"; 
+import { addProduct } from "../../redux/productSlice";
 import InputFormField from "./InputFormField";
 import TextAreaFormField from "./TextareaFormField";
 import { Switch } from "../Switch";
 import { useNavigate } from "react-router-dom";
-import { AppDispatch } from "../../redux/store"; 
+import { AppDispatch } from "../../redux/store";
 
 type ProductFormValues = Omit<Product, "id">;
 
 const AddProductForm: React.FC = () => {
   const navigate = useNavigate();
-  const dispatch = useDispatch<AppDispatch>(); 
+  const dispatch = useDispatch<AppDispatch>();
 
   const {
     register,
@@ -27,7 +27,7 @@ const AddProductForm: React.FC = () => {
   } = useForm<ProductFormValues>({
     resolver: yupResolver(createProductValidationSchema),
     defaultValues: {
-      published: false,
+      published: false, 
     },
   });
 
@@ -40,10 +40,10 @@ const AddProductForm: React.FC = () => {
     };
 
     try {
-      await dispatch(createNewProduct(newProduct)).unwrap();
-      await dispatch(addProduct(newProduct))
+      dispatch(addProduct(newProduct));
       reset(); 
-      navigate(`/products?tab=my&published=${published}`); 
+
+      navigate(`/products?tab=my&published=${published}`);
     } catch (error) {
       console.error("Failed to add product:", error);
     }
@@ -54,7 +54,7 @@ const AddProductForm: React.FC = () => {
   };
 
   return (
-    <div className="max-w-2xl mx-auto p-6 bg-white shadow-md rounded-lg">
+    <div className="bg-white shadow-md mx-auto p-6 rounded-lg max-w-2xl">
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
         <InputFormField
           label="Product Title"
@@ -94,7 +94,7 @@ const AddProductForm: React.FC = () => {
         />
         <button
           type="submit"
-          className="w-full py-3 mt-4 bg-green-800 text-white font-semibold rounded-md hover:bg-green-600"
+          className="bg-main-orange hover:bg-orange-hover mt-4 py-3 rounded-md w-full font-semibold text-white"
         >
           Add Product
         </button>
