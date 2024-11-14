@@ -1,81 +1,51 @@
-import React, { useEffect, useMemo, useCallback } from "react";
+import React, { useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { fetchProducts, setCreatedProducts } from "../redux/productSlice";
-import { AppDispatch, RootState } from "../redux/store";
-import { Product } from "../api/products";
-
+import { useFetchProducts } from "../hooks/useFetchProducts";
+import { usePagination } from "../hooks/usePagination";
+import { useSearchQuery } from "../hooks/useSearchQuery";
 import { MyProductsTab } from "../components/MyProducts";
-import { ProductListPaginationButton } from "../components/Buttons";
-import { setActiveTab, setFilter, setLimit } from "../redux/filterSlice";
 import { ProductCardSkeleton } from "../components/Skeletons";
-import { Switch } from "../components/Switch";
 import ProductCard from "../components/ProductCard/ProductCard";
-
-const useFetchProducts = (limit: number) => {
-  const dispatch = useDispatch<AppDispatch>();
-  const { products, status, error } = useSelector(
-    (state: RootState) => state.products
-  );
-
-  useEffect(() => {
-    if (limit > 0) {
-      dispatch(fetchProducts(limit));
-    }
-  }, [limit, dispatch]);
-
-  return { products, status, error };
-};
-
-const ErrorMessage: React.FC<{ message: string }> = ({ message }) => (
-  <div className="text-red-500 text-center mt-4">{message}</div>
-);
+import { setActiveTab, setFilter, setLimit } from "../redux/filterSlice";
+import { Product } from "../api/products";
+import { Switch } from "../components/Switch";
+import { Link } from "react-router-dom";
+import { routes } from "../routes";
+import { RootState } from "../redux/store";
+import { ProductListPaginationButton } from "../components/Buttons";
+import { SearchBar } from "../components/SearchBar";
 
 const ProductsListPage: React.FC = () => {
-  const dispatch = useDispatch<AppDispatch>();
+  const dispatch = useDispatch();
   const { createdProducts } = useSelector((state: RootState) => state.products);
   const { activeTab, filters, limit } = useSelector(
     (state: RootState) => state.filter
   );
 
-  const savedProducts = useMemo(() => {
-    return JSON.parse(localStorage.getItem("createdProducts") || "[]");
-  }, []);
+  const { products: fetchedProducts, status, error } = useFetchProducts(limit);
+  const { handleLimitChange } = usePagination();
+  const { handleSearch } = useSearchQuery("");
 
-  useEffect(() => {
-    dispatch(setCreatedProducts(savedProducts));
-  }, [dispatch, savedProducts]);
 
-  useEffect(() => {
-    const searchParams = new URLSearchParams(location.search);
-    const publishedParam = searchParams.get("published");
+  const filteredCreatedProducts = createdProducts.filter((product) =>
+    filters.isPublished ? product.published : !product.published
+  );
 
-    if (publishedParam !== null) {
-      dispatch(
-        setFilter({
-          key: "isPublished",
-          value: publishedParam === "true",
-        })
-      );
-    }
-  }, [dispatch]);
+  console.log(
+    "Filters:",
+    filters,
+    "filteredCreatedProducts:",
+    filteredCreatedProducts
+  );
 
-  const {
-    products: fetchedProducts,
-    status: fetchStatus,
-    error: fetchError,
-  } = useFetchProducts(limit);
-
-  const handleLimitChange = useCallback(
-    (newLimit: number) => {
-      dispatch(setLimit(newLimit));
-    },
-    [dispatch]
+  const ErrorMessage: React.FC<{ message: string }> = ({ message }) => (
+    <div className="mt-4 text-center text-red-500">{message}</div>
   );
 
   const renderProducts = () => {
-    if (fetchStatus === "loading") {
+    if (status === "loading") {
       return (
-        <div className="products-grid grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+        <div className="gap-4 grid products-grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
           {Array.from({ length: limit }).map((_, index) => (
             <ProductCardSkeleton key={index} />
           ))}
@@ -83,10 +53,8 @@ const ProductsListPage: React.FC = () => {
       );
     }
 
-    if (fetchStatus === "failed") {
-      return (
-        <ErrorMessage message={fetchError || "Failed to load products."} />
-      );
+    if (status === "failed") {
+      return <ErrorMessage message={error || "Failed to load products."} />;
     }
 
     if (fetchedProducts.length === 0 && createdProducts.length === 0) {
@@ -95,7 +63,7 @@ const ProductsListPage: React.FC = () => {
 
     if (activeTab === "api") {
       return (
-        <div className="products-grid grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+        <div className="gap-4 grid products-grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 p-6">
           {fetchedProducts.map((product: Product) => (
             <ProductCard key={product.id} product={product} />
           ))}
@@ -104,32 +72,35 @@ const ProductsListPage: React.FC = () => {
     }
 
     if (activeTab === "my") {
-      const filteredProducts = createdProducts.filter(
-        (product) => product.published === filters.isPublished
-      );
-      return <MyProductsTab products={filteredProducts} />;
+      return <MyProductsTab products={filteredCreatedProducts} />;
     }
   };
 
+  useEffect(() => {
+    if (limit === 0) {
+      dispatch(setLimit(8));
+    }
+  }, [limit, dispatch]);
+
   return (
-    <div className="products-list-page px-4 pb-8">
-      <div className="flex border-b-2 mb-6">
+    <div className="b-8">
+      <div className="flex mb-6 border-b">
         <div
           onClick={() => dispatch(setActiveTab("api"))}
-          className={`flex-1 py-4 text-center cursor-pointer text-lg font-semibold transition-all duration-300 ${
+          className={`flex-1 py-3 text-center cursor-pointer text-md font-semibold transition-all duration-300 ${
             activeTab === "api"
-              ? "bg-blue-500 text-white border-b-4 border-white shadow-lg"
-              : "hover:bg-gray-100"
+              ? "bg-gray-200 text-black border "
+              : "hover:bg-gray-300"
           }`}
         >
           API Products
         </div>
         <div
           onClick={() => dispatch(setActiveTab("my"))}
-          className={`flex-1 py-4 text-center cursor-pointer text-lg font-semibold transition-all duration-300 ${
+          className={`flex-1 py-3 text-center cursor-pointer text-md font-semibold transition-all duration-300 ${
             activeTab === "my"
-              ? "bg-blue-500 text-white border-b-4 border-white shadow-lg"
-              : "hover:bg-gray-100"
+              ? "bg-gray-200 text-black border "
+              : "hover:bg-gray-300"
           }`}
         >
           My Products
@@ -137,7 +108,7 @@ const ProductsListPage: React.FC = () => {
       </div>
 
       {activeTab === "api" && (
-        <div className="mb-4 flex space-x-4 justify-end">
+        <div className="flex justify-end space-x-4 mb-4 px-6">
           <ProductListPaginationButton
             onClick={() => handleLimitChange(8)}
             active={limit === 8}
@@ -157,16 +128,27 @@ const ProductsListPage: React.FC = () => {
       )}
 
       {activeTab === "my" && (
-        <div className="mb-4 flex justify-between items-center">
-          <Switch
-            label="Show Published Products Only"
-            checked={filters.isPublished}
-            onChange={() =>
-              dispatch(
-                setFilter({ key: "isPublished", value: !filters.isPublished })
-              )
-            }
-          />
+        <div>
+          <div className="flex justify-between items-center mb-4 px-6 font-semibold">
+            <Switch
+              label="Show only published"
+              checked={filters.isPublished}
+              onChange={() =>
+                dispatch(
+                  setFilter({ key: "isPublished", value: !filters.isPublished })
+                )
+              }
+            />
+            <div className="flex gap-2">
+              <SearchBar onSearch={handleSearch} />
+              <Link
+                to={routes.createProduct}
+                className="bg-main-orange hover:bg-orange-hover px-4 py-2 rounded-md w-80 font-semibold text-white hover:text-black transition-colors duration-300"
+              >
+                Add New Product
+              </Link>
+            </div>
+          </div>
         </div>
       )}
 
