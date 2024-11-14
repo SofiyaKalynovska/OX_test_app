@@ -45,9 +45,7 @@ export const fetchCreatedProducts = async (
   }));
 };
 
-export const createProduct = async (
-  product: Omit<Product, "id">
-): Promise<Product> => {
+export const createProductInApi = async (product: Omit<Product, "id">): Promise<Product> => {
   const response = await fetch(`${routes.fetchAllProducts}`, {
     method: "POST",
     headers: {
@@ -58,18 +56,18 @@ export const createProduct = async (
       price: product.price,
       description: product.description,
       category: product.category,
-      published: product.published ?? false, 
+      published: product.published ?? false,
     }),
   });
 
-  if (!response.ok) {
+  if (response.status === 200) {
+    return await response.json(); 
+  } else {
     throw new Error("Failed to create product");
   }
-
-  return await response.json();
 };
 
-export const updateProduct = async (product: Product): Promise<Product> => {
+export const updateProductInApi = async (product: Product): Promise<Product> => {
   const response = await fetch(`${routes.fetchProductDetails(product.id)}`, {
     method: "PUT",
     headers: {
@@ -81,13 +79,26 @@ export const updateProduct = async (product: Product): Promise<Product> => {
       description: product.description,
       image: product.image,
       category: product.category,
-      published: product.published ?? false,
+      published: product.published ?? false, 
     }),
   });
 
-  if (!response.ok) {
+  if (response.status === 200) {
+    return await response.json(); 
+  } else {
     throw new Error("Failed to update product");
   }
+};
 
-  return await response.json(); 
+
+export const deleteProductFromApi = async (id: number) => {
+  const response = await fetch(`${routes.fetchAllProducts}/${id}`, {
+    method: "DELETE",
+  });
+
+  if (response.status === 200) {
+    return { id }; 
+  } else {
+    throw new Error("Failed to delete product"); 
+  }
 };
