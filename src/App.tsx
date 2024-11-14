@@ -8,6 +8,7 @@ import ProductDetailPage from "./pages/ProductDetailsPage";
 import ProductAddPage from "./pages/ProductAddPage";
 import ProductsListPage from "./pages/ProductsListPage";
 import ProductEditPage from "./pages/ProductEditPage";
+import AboutPage from "./pages/AboutPage";
  
 
 const App: React.FC = () => {
@@ -28,6 +29,7 @@ const App: React.FC = () => {
             />
             <Route path={routes.createProduct} element={<ProductAddPage />} />
             <Route path={routes.editProduct} element={<ProductEditPage />} />
+            <Route path={routes.about} element={<AboutPage />} />
           </Routes>
         </Layout>
       </Router>

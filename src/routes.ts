@@ -11,4 +11,5 @@ export const routes = {
   productDetails: "/products/:id",
   createProduct: "/create_product",
   editProduct: "/edit/:productId",
+  about:"/about",
 };
