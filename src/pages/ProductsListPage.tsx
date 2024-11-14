@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useFetchProducts } from "../hooks/useFetchProducts";
 import { usePagination } from "../hooks/usePagination";
@@ -14,6 +14,8 @@ import { routes } from "../routes";
 import { RootState } from "../redux/store";
 import { ProductListPaginationButton } from "../components/Buttons";
 import { SearchBar } from "../components/SearchBar";
+import { sortByPrice } from "../utils/sortByPriceUtil";
+import {  SortByPriceSwitch } from "../components/Sort";
 
 const ProductsListPage: React.FC = () => {
   const dispatch = useDispatch();
@@ -26,17 +28,17 @@ const ProductsListPage: React.FC = () => {
   const { handleLimitChange } = usePagination();
   const { handleSearch } = useSearchQuery("");
 
+  const [sortDirection, setSortDirection] = useState<"asc" | "desc">("asc");
 
   const filteredCreatedProducts = createdProducts.filter((product) =>
     filters.isPublished ? product.published : !product.published
   );
 
-  console.log(
-    "Filters:",
-    filters,
-    "filteredCreatedProducts:",
-    filteredCreatedProducts
-  );
+
+  const sortedProducts = sortByPrice(fetchedProducts, sortDirection);
+   const handleSortChange = () => {
+     setSortDirection((prev) => (prev === "asc" ? "desc" : "asc"));
+   };
 
   const ErrorMessage: React.FC<{ message: string }> = ({ message }) => (
     <div className="mt-4 text-center text-red-500">{message}</div>
@@ -64,7 +66,7 @@ const ProductsListPage: React.FC = () => {
     if (activeTab === "api") {
       return (
         <div className="gap-4 grid products-grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 p-6">
-          {fetchedProducts.map((product: Product) => (
+          {sortedProducts.map((product: Product) => (
             <ProductCard key={product.id} product={product} />
           ))}
         </div>
@@ -108,22 +110,28 @@ const ProductsListPage: React.FC = () => {
       </div>
 
       {activeTab === "api" && (
-        <div className="flex justify-end space-x-4 mb-4 px-6">
-          <ProductListPaginationButton
-            onClick={() => handleLimitChange(8)}
-            active={limit === 8}
-            label="8 Products"
+        <div className="flex justify-between items-baseline mb-4 px-6 font-semibold">
+          <SortByPriceSwitch
+            sortDirection={sortDirection}
+            onSortChange={handleSortChange}
           />
-          <ProductListPaginationButton
-            onClick={() => handleLimitChange(16)}
-            active={limit === 16}
-            label="16 Products"
-          />
-          <ProductListPaginationButton
-            onClick={() => handleLimitChange(20)}
-            active={limit === 20}
-            label="All Products"
-          />
+          <div className="flex justify-end space-x-4 mb-4 px-6">
+            <ProductListPaginationButton
+              onClick={() => handleLimitChange(8)}
+              active={limit === 8}
+              label="8 Products"
+            />
+            <ProductListPaginationButton
+              onClick={() => handleLimitChange(16)}
+              active={limit === 16}
+              label="16 Products"
+            />
+            <ProductListPaginationButton
+              onClick={() => handleLimitChange(20)}
+              active={limit === 20}
+              label="All Products"
+            />
+          </div>
         </div>
       )}
 

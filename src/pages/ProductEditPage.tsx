@@ -1,4 +1,4 @@
-import React, { useEffect, useState, ChangeEvent } from "react";
+import React, { useEffect, useState, ChangeEvent, useCallback } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import {
@@ -17,9 +17,7 @@ const ProductEditPage: React.FC = () => {
   const navigate = useNavigate();
   const dispatch = useDispatch<AppDispatch>();
 
-  const { product, status, error } = useSelector(
-    (state: RootState) => state.products
-  );
+  const { status, error } = useSelector((state: RootState) => state.products);
 
   const filters = useSelector((state: RootState) => state.filter.filters);
 
@@ -43,23 +41,20 @@ const ProductEditPage: React.FC = () => {
     }
   }, [productId, dispatch]);
 
-  useEffect(() => {
-    if (product && !editedProduct) {
-      setEditedProduct(product);
-    }
-  }, [product, editedProduct]);
+  const handleInputChange = useCallback(
+    (e: ChangeEvent<HTMLInputElement>) => {
+      if (editedProduct) {
+        setEditedProduct((prevProduct) => ({
+          ...prevProduct!,
+          [e.target.name]:
+            e.target.type === "checkbox" ? e.target.checked : e.target.value,
+        }));
+      }
+    },
+    [editedProduct]
+  );
 
-  const handleInputChange = (e: ChangeEvent<HTMLInputElement>) => {
-    if (editedProduct) {
-      setEditedProduct({
-        ...editedProduct,
-        [e.target.name]:
-          e.target.type === "checkbox" ? e.target.checked : e.target.value,
-      });
-    }
-  };
-
-  const handleSave = () => {
+  const handleSave = useCallback(() => {
     if (editedProduct) {
       const createdProducts = JSON.parse(
         localStorage.getItem("createdProducts") || "[]"
@@ -82,23 +77,22 @@ const ProductEditPage: React.FC = () => {
           value: editedProduct.published ?? filters.isPublished,
         })
       );
-      // to do: create fetch and after add to
-      // dispatch(updateExistingProduct(editedProduct));
+
       dispatch(updateProduct(editedProduct));
 
       navigate(routes.products);
     }
-  };
+  }, [editedProduct, dispatch, filters.isPublished, navigate]);
 
-  const handleDeleteClick = () => {
+  const handleDeleteClick = useCallback(() => {
     setIsModalOpen(true);
-  };
+  }, []);
 
-  const handleCancelDelete = () => {
+  const handleCancelDelete = useCallback(() => {
     setIsModalOpen(false);
-  };
+  }, []);
 
-  const handleConfirmDelete = async () => {
+  const handleConfirmDelete = useCallback(async () => {
     if (editedProduct) {
       setIsDeleting(true);
       try {
@@ -122,9 +116,9 @@ const ProductEditPage: React.FC = () => {
         console.error("Delete failed", err);
       }
     }
-  };
+  }, [editedProduct, dispatch, navigate]);
 
-  const renderStatus = () => {
+  const renderStatus = useCallback(() => {
     if (status === "loading") {
       return <div>Loading...</div>;
     }
@@ -138,17 +132,17 @@ const ProductEditPage: React.FC = () => {
     }
 
     return null;
-  };
+  }, [status, error, editedProduct]);
 
-  const renderForm = () => {
+  const renderForm = useCallback(() => {
     if (!editedProduct) return null;
 
     return (
       <table className="min-w-full table-auto">
         <thead>
           <tr>
-            <th className="border px-4 py-2">Field</th>
-            <th className="border px-4 py-2">Value</th>
+            <th className="px-4 py-2 border">Field</th>
+            <th className="px-4 py-2 border">Value</th>
           </tr>
         </thead>
         <tbody>
@@ -157,8 +151,8 @@ const ProductEditPage: React.FC = () => {
 
             return (
               <tr key={key}>
-                <td className="border px-4 py-2 capitalize">{key}</td>
-                <td className="border px-4 py-2">
+                <td className="px-4 py-2 border capitalize">{key}</td>
+                <td className="px-4 py-2 border">
                   <input
                     type={key === "published" ? "checkbox" : "text"}
                     name={key}
@@ -173,7 +167,7 @@ const ProductEditPage: React.FC = () => {
                         : undefined
                     }
                     onChange={handleInputChange}
-                    className="border p-2 rounded w-full"
+                    className="p-2 border rounded w-full"
                   />
                 </td>
               </tr>
@@ -182,26 +176,26 @@ const ProductEditPage: React.FC = () => {
         </tbody>
       </table>
     );
-  };
+  }, [editedProduct, handleInputChange]);
 
   return (
-    <div className="container mx-auto p-6 bg-white shadow-md rounded-lg">
-      <h2 className="text-2xl font-semibold mb-4">Edit Product</h2>
+    <div className="bg-white shadow-md mx-auto p-6 rounded-lg container">
+      <h2 className="mb-4 font-semibold text-2xl">Edit Product</h2>
 
       {renderStatus()}
       {renderForm()}
 
-      <div className="mt-4 flex justify-end gap-4">
+      <div className="flex justify-end gap-4 mt-4">
         <button
           onClick={handleSave}
-          className="bg-blue-500 text-white py-2 px-4 rounded-md hover:bg-blue-700"
+          className="bg-blue-500 hover:bg-blue-700 px-4 py-2 rounded-md text-white"
         >
           Save Changes
         </button>
 
         <button
           onClick={handleDeleteClick}
-          className="bg-red-500 text-white py-2 px-4 rounded-md hover:bg-red-700"
+          className="bg-red-500 hover:bg-red-700 px-4 py-2 rounded-md text-white"
           disabled={isDeleting}
         >
           {isDeleting ? "Deleting..." : "Delete Product"}
