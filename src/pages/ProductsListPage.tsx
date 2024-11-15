@@ -15,7 +15,7 @@ import { RootState } from "../redux/store";
 import { ProductListPaginationButton } from "../components/Buttons";
 import { SearchBar } from "../components/SearchBar";
 import { sortByPrice } from "../utils/sortByPriceUtil";
-import {  SortByPriceSwitch } from "../components/Sort";
+import { SortByPriceSwitch } from "../components/Sort";
 
 const ProductsListPage: React.FC = () => {
   const dispatch = useDispatch();
@@ -26,7 +26,7 @@ const ProductsListPage: React.FC = () => {
 
   const { products: fetchedProducts, status, error } = useFetchProducts(limit);
   const { handleLimitChange } = usePagination();
-  const { handleSearch } = useSearchQuery("");
+  const { handleSearch, filteredProducts } = useSearchQuery("");
 
   const [sortDirection, setSortDirection] = useState<"asc" | "desc">("asc");
 
@@ -34,11 +34,16 @@ const ProductsListPage: React.FC = () => {
     filters.isPublished ? product.published : !product.published
   );
 
+  const filteredProductsList =
+    activeTab === "api"
+      ? filteredProducts(fetchedProducts) 
+      : filteredProducts(filteredCreatedProducts); 
 
   const sortedProducts = sortByPrice(fetchedProducts, sortDirection);
-   const handleSortChange = () => {
-     setSortDirection((prev) => (prev === "asc" ? "desc" : "asc"));
-   };
+
+  const handleSortChange = () => {
+    setSortDirection((prev) => (prev === "asc" ? "desc" : "asc"));
+  };
 
   const ErrorMessage: React.FC<{ message: string }> = ({ message }) => (
     <div className="mt-4 text-center text-red-500">{message}</div>
@@ -74,7 +79,7 @@ const ProductsListPage: React.FC = () => {
     }
 
     if (activeTab === "my") {
-      return <MyProductsTab products={filteredCreatedProducts} />;
+      return <MyProductsTab products={filteredProductsList} />;
     }
   };
 
@@ -119,17 +124,17 @@ const ProductsListPage: React.FC = () => {
             <ProductListPaginationButton
               onClick={() => handleLimitChange(8)}
               active={limit === 8}
-              label="8 Products"
+              label="8 products"
             />
             <ProductListPaginationButton
               onClick={() => handleLimitChange(16)}
               active={limit === 16}
-              label="16 Products"
+              label="16 roducts"
             />
             <ProductListPaginationButton
               onClick={() => handleLimitChange(20)}
               active={limit === 20}
-              label="All Products"
+              label="All products"
             />
           </div>
         </div>
@@ -153,7 +158,7 @@ const ProductsListPage: React.FC = () => {
                 to={routes.createProduct}
                 className="bg-main-orange hover:bg-orange-hover px-4 py-2 rounded-md w-80 font-semibold text-center text-white hover:text-black transition-colors duration-300"
               >
-                Add New Product
+                + Add new product
               </Link>
             </div>
           </div>
